@@ -7,11 +7,21 @@ import {
 } from "react-native";
 
 import SideMenu from "../components/SideMenu";
-import {useRouter} from "expo-router";
+import {Redirect, useRouter} from "expo-router";
+import {logoutUser, selectDisplayName} from "@/store/authSlice";
+import {useAppDispatch, useAppSelector} from "@/store/hooks";
 
 export default function HomeScreen() {
     const [menuOpen, setMenuOpen] = useState(false);
     const router = useRouter();
+    const dispatch = useAppDispatch();
+    const token = useAppSelector((state) => state.auth.token);
+    const name = useAppSelector(selectDisplayName);
+
+    // sin sesion se regresa al login
+    if (!token) {
+        return <Redirect href="/" />;
+    }
 
 
 
@@ -30,7 +40,7 @@ export default function HomeScreen() {
                 </TouchableOpacity>
 
                 <Text style={styles.greeting}>
-                    Hola, Ana
+                    Hola, {name}
                 </Text>
 
                 <Text style={styles.profile}>
@@ -50,6 +60,15 @@ export default function HomeScreen() {
                     Nos alegra verte nuevamente.
                 </Text>
 
+                <TouchableOpacity
+                    style={styles.button}
+                    onPress={() => router.push("/students")}
+                >
+                    <Text style={styles.buttonText}>
+                        🎓  Administrar estudiantes
+                    </Text>
+                </TouchableOpacity>
+
             </View>
 
             {/* Menú lateral */}
@@ -62,6 +81,11 @@ export default function HomeScreen() {
                     router.push("/profile");
                 }}
 
+                onStudents={() => {
+                    setMenuOpen(false);
+                    router.push("/students");
+                }}
+
                 onSettings={() => {
                     setMenuOpen(false);
                     router.push("/settings");
@@ -69,7 +93,7 @@ export default function HomeScreen() {
 
                 onLogout={() => {
                     setMenuOpen(false);
-                    router.replace("/");
+                    dispatch(logoutUser());
                 }}
             />
 
@@ -126,6 +150,20 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: "#666666",
         textAlign: "center",
+    },
+
+    button: {
+        marginTop: 30,
+        backgroundColor: "#4F46E5",
+        paddingVertical: 14,
+        paddingHorizontal: 24,
+        borderRadius: 8,
+    },
+
+    buttonText: {
+        color: "#FFFFFF",
+        fontSize: 16,
+        fontWeight: "600",
     },
 
 });

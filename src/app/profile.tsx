@@ -5,11 +5,21 @@ import {
     StyleSheet
 } from "react-native";
 
-import { useRouter } from "expo-router";
+import { Redirect, useRouter } from "expo-router";
+import { selectDisplayName, selectEmail } from "@/store/authSlice";
+import { useAppSelector } from "@/store/hooks";
 
 export default function ProfileScreen() {
 
     const router = useRouter();
+    const token = useAppSelector((state) => state.auth.token);
+    const name = useAppSelector(selectDisplayName);
+    const email = useAppSelector(selectEmail);
+
+    // sin sesion se regresa al login
+    if (!token) {
+        return <Redirect href="/" />;
+    }
 
     return (
         <View style={styles.container}>
@@ -34,16 +44,16 @@ export default function ProfileScreen() {
 
                 <View style={styles.avatar}>
                     <Text style={styles.avatarText}>
-                        A
+                        {name.charAt(0).toUpperCase()}
                     </Text>
                 </View>
 
                 <Text style={styles.name}>
-                    Ana García
+                    {name}
                 </Text>
 
                 <Text style={styles.email}>
-                    ana@test.com
+                    {email}
                 </Text>
 
             </View>

@@ -14,26 +14,56 @@ export default function LoginForm({
                                       onLogin,
                                       loading,
                                       error,
+                                      onClearError,
                                   }: LoginFormProps) {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [emailError, setEmailError] = useState("");
+    const [passwordError, setPasswordError] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
 
-    const handleLogin = () => {
-        if (!email.trim()) {
-            alert("Por favor ingresa tu usuario");
-            return;
-        }
-
-        if (!password) {
-            alert("Por favor ingresa tu contraseña");
-            return;
-        }
-
-        onLogin(email, password);
+   
+    const handleEmailChange = (text: string) => {
+        setEmail(text);
+        setEmailError("");
+        onClearError();
     };
 
-    const isFormValid =
-        email.trim() !== "" && password !== "";
+    const handlePasswordChange = (text: string) => {
+        setPassword(text);
+        setPasswordError("");
+        onClearError();
+    };
+
+    const handleLogin = () => {
+        
+        if (loading) {
+            return;
+        }
+
+        // limpiar errores anteriores si se tiene en un email o una contraseña
+        setEmailError("");
+        setPasswordError("");
+        onClearError();
+
+        let hayError = false;
+
+        if (email.trim() === "") {
+            setEmailError("El usuario es obligatorio");
+            hayError = true;
+        }
+
+        if (password === "") {
+            setPasswordError("La contraseña es obligatoria");
+            hayError = true;
+        }
+
+        if (hayError) {
+            return;
+        }
+
+        onLogin(email.trim(), password);
+    };
 
     return (
         <View style={styles.container}>
@@ -50,38 +80,70 @@ export default function LoginForm({
             ) : null}
 
             <TextInput
-                style={styles.input}
+                style={[
+                    styles.input,
+                    emailError !== "" && styles.inputError,
+                ]}
                 placeholder="Usuario"
                 value={email}
-                onChangeText={setEmail}
+                onChangeText={handleEmailChange}
                 autoCapitalize="none"
                 editable={!loading}
                 placeholderTextColor="#999"
             />
+            {emailError !== "" ? (
+                <Text style={styles.fieldError}>
+                    {emailError}
+                </Text>
+            ) : null}
 
             <TextInput
-                style={styles.input}
+                style={[
+                    styles.input,
+                    passwordError !== "" && styles.inputError,
+                ]}
                 placeholder="Contraseña"
                 value={password}
-                onChangeText={setPassword}
-                secureTextEntry={true}
+                onChangeText={handlePasswordChange}
+                secureTextEntry={!showPassword}
                 editable={!loading}
                 placeholderTextColor="#999"
             />
+            {passwordError !== "" ? (
+                <Text style={styles.fieldError}>
+                    {passwordError}
+                </Text>
+            ) : null}
+
+            <TouchableOpacity
+                style={styles.showPassword}
+                onPress={() => setShowPassword(!showPassword)}
+            >
+                <Text style={styles.showPasswordText}>
+                    {showPassword
+                        ? "Ocultar contraseña"
+                        : "Mostrar contraseña"}
+                </Text>
+            </TouchableOpacity>
 
             <TouchableOpacity
                 style={[
                     styles.button,
-                    (!isFormValid || loading) && styles.buttonDisabled,
+                    loading && styles.buttonDisabled,
                 ]}
                 onPress={handleLogin}
-                disabled={!isFormValid || loading}
+                disabled={loading}
             >
                 {loading ? (
-                    <ActivityIndicator
-                        color="#fff"
-                        size="small"
-                    />
+                    <View style={styles.loadingRow}>
+                        <ActivityIndicator
+                            color="#fff"
+                            size="small"
+                        />
+                        <Text style={styles.buttonText}>
+                            Validando...
+                        </Text>
+                    </View>
                 ) : (
                     <Text style={styles.buttonText}>
                         Iniciar Sesión
@@ -122,6 +184,28 @@ const styles = StyleSheet.create({
         color: "#333",
     },
 
+    inputError: {
+        borderColor: "red",
+    },
+
+    fieldError: {
+        width: "100%",
+        color: "red",
+        fontSize: 14,
+        marginTop: -10,
+        marginBottom: 15,
+    },
+
+    showPassword: {
+        width: "100%",
+        marginBottom: 10,
+    },
+
+    showPasswordText: {
+        color: "#007AFF",
+        fontSize: 14,
+    },
+
     errorContainer: {
         width: "100%",
         marginBottom: 15,
@@ -145,6 +229,12 @@ const styles = StyleSheet.create({
 
     buttonDisabled: {
         backgroundColor: "#999",
+    },
+
+    loadingRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 8,
     },
 
     buttonText: {

@@ -5,15 +5,24 @@ import {
     StyleSheet
 } from "react-native";
 
-import { useRouter } from "expo-router";
+import { Redirect, useRouter } from "expo-router";
+import { logoutUser } from "@/store/authSlice";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
 
 export default function SettingsScreen() {
 
     const router = useRouter();
+    const dispatch = useAppDispatch();
+    const token = useAppSelector((state) => state.auth.token);
 
     const handleLogout = () => {
-        router.replace("/");
+        dispatch(logoutUser());
     };
+
+    // sin sesion se regresa al login
+    if (!token) {
+        return <Redirect href="/" />;
+    }
 
     return (
         <View style={styles.container}>

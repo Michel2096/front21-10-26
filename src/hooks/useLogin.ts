@@ -1,31 +1,25 @@
-import {useState} from "react";
 import {LoginRequest} from "@/interfaces/Auth.Interface";
-import {loginService} from "@/services/Auth.service";
+import {clearError as clearAuthError, loginUser} from "@/store/authSlice";
+import {useAppDispatch, useAppSelector} from "@/store/hooks";
 
 export const useLogin = () => {
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState("");
+    const dispatch = useAppDispatch();
+    const loading = useAppSelector((state) => state.auth.loading);
+    const error = useAppSelector((state) => state.auth.error);
 
     const login = async (
         data: LoginRequest
     ): Promise<boolean> => {
-        try {
-            setLoading(true);
-            setError("");
+        const result = await dispatch(loginUser(data));
+        return loginUser.fulfilled.match(result);
+    };
 
-            const response = await loginService(data);
-            if (!response.success) {
-                setError(response.message);
-                return false;
-            }
-            return true;
-        } catch (error) {
-            setError("Ocurrio un error");
-            return false;
-        } finally {
-            setLoading(false);
+    // borra el error que mando el api
+    const clearError = () => {
+        if (error !== "") {
+            dispatch(clearAuthError());
         }
     };
 
-    return {login, loading, error};
+    return {login, loading, error, clearError};
 };

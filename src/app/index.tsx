@@ -3,30 +3,25 @@ import {
     View
 } from "react-native";
 
-import { useRouter } from "expo-router";
+import { Redirect } from "expo-router";
 import LoginForm from "../components/LoginForm";
 import { useLogin } from "../hooks/useLogin";
-import {LoginRequest} from "@/interfaces/Auth.Interface";
+import { useAppSelector } from "@/store/hooks";
 
 export default function LoginScreen() {
-    const router = useRouter()
+    const token = useAppSelector((state) => state.auth.token);
 
     const {
         login,
         loading,
-        error
+        error,
+        clearError
     } = useLogin();
 
-    const handleLogin = async (
-        data: LoginRequest
-    ) => {
-
-        const success = await login(data);
-
-        if (success) {
-            router.replace("/home");
-        }
-    };
+    // con sesion activa (recien logeado o token guardado) se manda al home
+    if (token) {
+        return <Redirect href="/home" />;
+    }
 
     return (
         <View style={styles.container}>
@@ -35,13 +30,14 @@ export default function LoginScreen() {
                     email,
                     password
                 ) =>
-                    handleLogin({
+                    login({
                         email,
                         password
                     })
                 }
                 loading={loading}
                 error={error}
+                onClearError={clearError}
             />
         </View>
     );

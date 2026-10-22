@@ -2,14 +2,20 @@ import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 import { SideMenuProps } from "@/interfaces/menu.interface";
 import MenuItem from "@/components/MenuItem";
+import { selectDisplayName, selectEmail } from "@/store/authSlice";
+import { useAppSelector } from "@/store/hooks";
 
 export default function SideMenu({
                                      visible,
                                      onClose,
                                      onProfile,
+                                     onStudents,
                                      onSettings,
                                      onLogout,
                                  }: SideMenuProps) {
+    // nombre y correo salen del store, no de props
+    const name = useAppSelector(selectDisplayName);
+    const email = useAppSelector(selectEmail);
 
     if (!visible) {
         return null;
@@ -24,16 +30,16 @@ export default function SideMenu({
 
                     <View style={styles.avatar}>
                         <Text style={styles.avatarText}>
-                            A
+                            {name.charAt(0).toUpperCase()}
                         </Text>
                     </View>
 
                     <Text style={styles.name}>
-                        Ana García
+                        {name}
                     </Text>
 
                     <Text style={styles.email}>
-                        ana@test.com
+                        {email}
                     </Text>
 
                 </View>
@@ -48,6 +54,12 @@ export default function SideMenu({
                     title="Mi Perfil"
                     icon="👤"
                     onPress={onProfile}
+                />
+
+                <MenuItem
+                    title="Estudiantes"
+                    icon="🎓"
+                    onPress={onStudents}
                 />
 
                 <MenuItem
