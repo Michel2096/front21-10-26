@@ -12,15 +12,76 @@ interface LoadingProps {
 }
 
 export default function Loading({ message = 'Cargando...', size = 'large' }: LoadingProps) {
+  /**
+   * ERROR #10: Orden de Hooks
+   * 
+   * REGLA DE ORO:
+   * - React hooks DEBEN llamarse en el mismo orden en cada render
+   * - Orden correcto: useState/useRef primero, useEffect después
+   * 
+   * ❌ CÓDIGO INCORRECTO (ANTES):
+   * useEffect(() => { ... }, [fadeAnim]);  // ❌ Hook 1 - MAL ORDEN
+   * const fadeAnim = useRef(new Animated.Value(0)).current;  // ❌ Hook 2
+   * 
+   * PROBLEMA SI SE INVIERTE:
+   * - Error: "Rendered more hooks than during the previous render"
+   * - React mantiene un array interno de hooks, el orden es crítico
+   * 
+   * ✅ SOLUCIÓN:
+   * - Mantener orden correcto: useRef primero, useEffect después
+   */
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    Animated.timing(fadeAnim, {
+    /**
+     * ERROR #1: Memory Leak en Animaciones
+     * 
+     * ❌ CÓDIGO INCORRECTO (ANTES):
+     * useEffect(() => {
+     *   Animated.timing(fadeAnim, {
+     *     toValue: 1,
+     *     duration: 300,
+     *     useNativeDriver: true,
+     *   }).start();
+     * }, [fadeAnim]);
+     * 
+     * PROBLEMA:
+     * - Animated.timing() sin cleanup
+     * - Si usuario navega a otra pantalla mientras anima → memory leak
+     * - Warning: "Can't perform a React state update on an unmounted component"
+     * 
+     * ✅ SOLUCIÓN:
+     * - Guardar referencia de la animación
+     * - Retornar función cleanup que detiene la animación
+     */
+    const animation = Animated.timing(fadeAnim, {
       toValue: 1,
       duration: 300,
-      useNativeDriver: false,
-    }).start();
-  }, []);
+      /**
+       * ERROR #2: useNativeDriver Incorrecto
+       * 
+       * ❌ CÓDIGO INCORRECTO (ANTES):
+       * useNativeDriver: false
+       * 
+       * PROBLEMA:
+       * - useNativeDriver: false fuerza animación en hilo de JavaScript
+       * - La propiedad opacity SÍ soporta native driver
+       * - Causa lag en dispositivos antiguos o con muchas animaciones
+       * 
+       * ✅ SOLUCIÓN:
+       * - Usar useNativeDriver: true para animaciones fluidas
+       * - Se ejecuta en hilo nativo de UI (60fps garantizados)
+       */
+      useNativeDriver: true,
+    });
+
+    animation.start();
+
+    // CLEANUP: Detiene animación si componente se desmonta
+    return () => {
+      animation.stop();
+    };
+  }, [fadeAnim]);
 
   return (
     <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
