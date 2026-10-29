@@ -4,7 +4,7 @@
  */
 
 import apiClient from './client';
-import { Student, StudentListResponse } from '../types/student';
+import { Student, StudentInput, StudentListResponse } from '../types/student';
 
 /**
  * Obtiene la lista de todos los estudiantes
@@ -28,7 +28,7 @@ export async function getStudentById(id: number): Promise<Student> {
  * Crea un nuevo estudiante
  * @param student - Datos del estudiante (sin ID)
  */
-export async function createStudent(student: Omit<Student, 'id' | 'created_at' | 'updated_at'>): Promise<Student> {
+export async function createStudent(student: StudentInput): Promise<Student> {
   const response = await apiClient.post<{ data: Student }>('/api/students', student);
   return response.data.data;
 }
@@ -38,7 +38,7 @@ export async function createStudent(student: Omit<Student, 'id' | 'created_at' |
  * @param id - ID del estudiante
  * @param student - Datos actualizados
  */
-export async function updateStudent(id: number, student: Partial<Student>): Promise<Student> {
+export async function updateStudent(id: number, student: StudentInput): Promise<Student> {
   const response = await apiClient.put<{ data: Student }>(`/api/students/${id}`, student);
   return response.data.data;
 }

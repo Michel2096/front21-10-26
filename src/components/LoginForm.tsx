@@ -25,7 +25,8 @@ export default function LoginForm({
 
             <TextInput
                 style={styles.input}
-                placeholder="Usuario"
+                placeholder="Correo electrónico"
+                keyboardType="email-address"
                 value={email}
                 onChangeText={setEmail}
                 autoCapitalize="none"

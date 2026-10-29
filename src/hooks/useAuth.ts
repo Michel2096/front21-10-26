@@ -73,7 +73,7 @@ export function useAuth(): UseAuthReturn {
       const response = await authApi.login({ email, password });
 
       // Guardar tokens de forma segura
-      await saveAccessToken(response.token);
+      await saveAccessToken(response.accessToken);
       await saveRefreshToken(response.refreshToken);
 
       setState({

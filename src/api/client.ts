@@ -5,9 +5,10 @@
 
 import axios, { AxiosInstance, InternalAxiosRequestConfig } from 'axios';
 import { getAccessToken, getRefreshToken, saveAccessToken, saveRefreshToken, clearTokens } from '../utils/storage';
+import { API_BASE_URL } from '../constants/api';
 
-// URL base del backend - cambiar según tu configuración
-const API_BASE_URL = 'http://localhost:3000';
+// Endpoints que no deben disparar la renovación automática del token
+const AUTH_ENDPOINTS = ['/api/auth/login', '/api/auth/register', '/api/auth/refresh'];
 
 // Instancia de Axios configurada
 const apiClient: AxiosInstance = axios.create({
@@ -38,8 +39,10 @@ apiClient.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    // Si es error 401 y no es un intento de refresh
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    const isAuthEndpoint = AUTH_ENDPOINTS.some((url) => originalRequest?.url?.includes(url));
+
+    // Si es error 401, no es un endpoint de auth y no es un reintento
+    if (error.response?.status === 401 && originalRequest && !isAuthEndpoint && !originalRequest._retry) {
       originalRequest._retry = true;
 
       try {
@@ -57,14 +60,14 @@ apiClient.interceptors.response.use(
           refreshToken,
         });
 
-        const { token, refreshToken: newRefreshToken } = response.data;
+        const { accessToken, refreshToken: newRefreshToken } = response.data;
 
         // Guardar nuevos tokens
-        await saveAccessToken(token);
+        await saveAccessToken(accessToken);
         await saveRefreshToken(newRefreshToken);
 
         // Reintentar la petición original con el nuevo token
-        originalRequest.headers.Authorization = `Bearer ${token}`;
+        originalRequest.headers.Authorization = `Bearer ${accessToken}`;
         return apiClient(originalRequest);
       } catch (refreshError) {
         // Error al refrescar, limpiar tokens y rechazar

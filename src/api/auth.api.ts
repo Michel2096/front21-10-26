@@ -5,6 +5,7 @@
 
 import apiClient from './client';
 import { User, UserMeResponse } from '../types/user';
+import { getRefreshToken } from '../utils/storage';
 
 export interface LoginRequest {
   email: string;
@@ -12,7 +13,7 @@ export interface LoginRequest {
 }
 
 export interface LoginResponse {
-  token: string;
+  accessToken: string;
   refreshToken: string;
   user: User;
 }
@@ -27,7 +28,7 @@ export interface RefreshTokenRequest {
 }
 
 export interface RefreshTokenResponse {
-  token: string;
+  accessToken: string;
   refreshToken: string;
 }
 
@@ -54,7 +55,7 @@ export async function register(data: RegisterRequest): Promise<{ user: User }> {
  */
 export async function getCurrentUser(): Promise<User> {
   const response = await apiClient.get<UserMeResponse>('/api/auth/me');
-  return response.data.user;
+  return response.data.data;
 }
 
 /**
@@ -66,8 +67,9 @@ export async function refreshToken(refreshToken: string): Promise<RefreshTokenRe
 }
 
 /**
- * Cierra sesión (revoca el token actual)
+ * Cierra sesión (revoca el access token y el refresh token en el servidor)
  */
 export async function logout(): Promise<void> {
-  await apiClient.post('/api/auth/logout');
+  const refreshToken = await getRefreshToken();
+  await apiClient.post('/api/auth/logout', { refreshToken });
 }

@@ -1,4 +1,5 @@
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useAuth } from "../hooks/useAuth";
 import { SideMenuProps } from "../interfaces/menu.interface";
 import MenuItem from "./MenuItem";
 
@@ -6,22 +7,29 @@ export default function SideMenu({
     visible,
     onClose
 }: SideMenuProps) {
+    const { user, logout } = useAuth();
+
     if (!visible) {
         return null;
     }
+    const displayName = user?.nombre
+        ? `${user.nombre} ${user.apellido ?? ""}`.trim()
+        : user?.email ?? "Usuario";
+
+    return (
     <View style={styles.overlay}>
         <View style={styles.menu}>
             <View style={styles.userContainer}>
                     <View style={styles.avatar}>
                         <Text style={styles.avatarText}>
-                            A
+                            {displayName.charAt(0).toUpperCase() || "?"}
                         </Text>
                     </View>
                     <Text style={styles.name}>
-                        Ana García
+                        {displayName}
                     </Text>
                     <Text style={styles.email}>
-                        ana@test.com
+                        {user?.email ?? ""}
                     </Text>
                 </View>
                 <MenuItem
@@ -36,7 +44,7 @@ export default function SideMenu({
                 <View style={styles.spacer} />
                 <TouchableOpacity
                     style={styles.logout}
-                    onPress={() => {}}>
+                    onPress={logout}>
                     <Text style={styles.logoutIcon}>
                         🚪
                     </Text>
@@ -50,7 +58,7 @@ export default function SideMenu({
                 onPress={onClose}
             />
     </View>
-
+    );
 }
 
 const styles = StyleSheet.create({

@@ -12,6 +12,15 @@ export interface Student {
   updated_at: string;
 }
 
+/** Datos que la API exige para crear o actualizar (password obligatorio). */
+export interface StudentInput {
+  nombre: string;
+  apellido: string;
+  matricula: string;
+  email: string;
+  password: string;
+}
+
 export interface StudentListResponse {
   data: Student[];
 }

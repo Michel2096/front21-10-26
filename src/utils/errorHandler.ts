@@ -29,7 +29,8 @@ export function handleApiError(error: unknown): ApiError {
           };
         case 401:
           return {
-            message: 'Sesión expirada. Por favor, inicia sesión nuevamente.',
+            // En login el servidor responde "Credenciales inválidas"; no es sesión expirada
+            message: serverMessage || 'Sesión expirada. Por favor, inicia sesión nuevamente.',
             statusCode: status,
           };
         case 403:

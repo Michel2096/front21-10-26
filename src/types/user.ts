@@ -5,8 +5,11 @@
 export interface User {
   id: number;
   email: string;
+  kind?: 'user' | 'student';
+  nombre?: string;
+  apellido?: string;
 }
 
 export interface UserMeResponse {
-  user: User;
+  data: User;
 }
